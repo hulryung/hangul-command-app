@@ -52,11 +52,53 @@ open HangulCommandApp.xcodeproj
 
 ```bash
 # 릴리즈 다운로드
-curl -L -o HangulCommandApp.zip https://github.com/hulryung/hangul-command-app/releases/latest/download/HangulCommandApp.zip
+curl -L -o HangulCommandApp.zip https://github.com/hulryung/hangul-command-app/releases/latest/download/HangulCommandApp-1.0.0.zip
 
 # 압축 해제 및 설치
 unzip HangulCommandApp.zip
 cp -R HangulCommandApp.app /Applications/
+```
+
+### 방법 3: 빌드 가이드
+
+자세한 빌드 방법은 [BUILD.md](BUILD.md)를 참고하세요.
+
+```bash
+# 빌드 스크립트 실행 (권한 부여 필요)
+chmod +x build.sh
+./build.sh
+```
+
+### 방법 4: 다운로드 및 설치
+
+GitHub 릴리즈 페이지에서 최신 버전을 다운로드하여 설치할 수 있습니다.
+
+```bash
+# 최신 릴리즈 다운로드
+curl -s https://api.github.com/repos/hulryung/hangul-command-app/releases/latest | \
+  grep "browser_download_url.*zip" | \
+  cut -d '"' -f 4
+
+# 또는 버전 지정 다운로드
+curl -L -o HangulCommandApp.zip https://github.com/hulryung/hangul-command-app/releases/download/v1.0.0/HangulCommandApp-1.0.0.zip
+
+# 압축 해제 및 설치
+unzip HangulCommandApp.zip -d /tmp/
+cp -R /tmp/HangulCommandApp.app /Applications/
+rm -rf /tmp/HangulCommandApp*
+```
+
+### 방법 5: 명령어로 테스트
+
+```bash
+# 현재 상태 확인
+launchctl list | grep com.hangulcommand.userkeymapping
+
+# 수동 키 매핑 테스트 (테스트 목적)
+hidutil property --set '{"UserKeyMapping":[{"HIDKeyboardModifierMappingSrc":0x7000000e7,"HIDKeyboardModifierMappingDst":0x70000006d}]}'
+
+# 설정 초기화
+hidutil property --set '{"UserKeyMapping":[]}'
 ```
 
 ## 💻 사용 방법
@@ -76,13 +118,20 @@ cp -R HangulCommandApp.app /Applications/
 
 ## 🗑️ 제거 방법
 
+### 방법 1: 앱에서 제거
 앱에서 "비활성화" 버튼을 누르면 모든 설정이 원래대로 복원됩니다.
 
+### 방법 2: 수동 제거
 ```bash
-# 수동 제거 (필요시)
+# LaunchAgent 제거
 sudo launchctl remove com.hangulcommand.userkeymapping
+
+# 시스템 파일 제거
 sudo rm -f /Library/LaunchAgents/com.hangulcommand.userkeymapping.plist
 sudo rm -f /Users/Shared/bin/hangulkeymapping
+
+# 임시 파일 정리 (필요시)
+rm -f /tmp/hangulkeymapping
 ```
 
 ## ⚙️ 기술 원리
@@ -154,11 +203,27 @@ pkgbuild --install-location /Applications \
 버그 발견 시 [Issues](https://github.com/hulryung/hangul-command-app/issues)에 등록해주세요.
 
 ### 리포트 형식
-- **macOS 버전**: 
-- **앱 버전**: 
-- **재현 단계**: 
-- **기대 결과**: 
-- **실제 결과**: 
+- **macOS 버전**: (예: 14.0 Sonoma)
+- **앱 버전**: (예: 1.0.0)
+- **재현 단계**: 구체적인 단계별 설명
+- **기대 결과**: 예상되는 동작
+- **실제 결과**: 실제 발생한 현상
+- **추가 정보**: 에러 메시지, 시스템 로그 등
+
+### 📋 자주 발생하는 문제
+
+| 문제 | 원인 | 해결 방법 |
+|------|------|----------|
+| 관리자 권한 오류 | 시스템 설정 > 개인정보 & 보안 > 접근성에서 앱 허용 필요 | [해결 방법](#권한-설정-방법) |
+| 한영 전환이 안됨 | 시스템 환경설정에서 F18 키 설정이 필요 | [설정 방법](#설정-방법) |
+| 앱 충돌 | LaunchAgent 충돌 발생 시 | [수동 제거](#제거-방법) 실행 |
+
+### ⚙️ 권한 설정 방법
+
+1. **시스템 환경설정** → 개인정보 & 보안 → 접근성
+2. **개인정보 & 보안** → 접근성
+3. **파인더에서 앱 추가** → `/Applications/HangulCommandApp.app` 선택
+4. **관리자 비밀번호 입력** 후 허용 클릭
 
 ## 🤝 기여
 
