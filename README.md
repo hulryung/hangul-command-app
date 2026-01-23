@@ -214,9 +214,9 @@ pkgbuild --install-location /Applications \
 
 | 문제 | 원인 | 해결 방법 |
 |------|------|----------|
-| 관리자 권한 오류 | 시스템 설정 > 개인정보 & 보안 > 접근성에서 앱 허용 필요 | [해결 방법](#권한-설정-방법) |
-| 한영 전환이 안됨 | 시스템 환경설정에서 F18 키 설정이 필요 | [설정 방법](#설정-방법) |
-| 앱 충돌 | LaunchAgent 충돌 발생 시 | [수동 제거](#제거-방법) 실행 |
+| 관리자 권한 오류 | 시스템 설정 > 개인정보 & 보안 > 접근성에서 앱 허용 필요 | [해결 방법](#️-권한-설정-방법) |
+| 한영 전환이 안됨 | 시스템 환경설정에서 F18 키 설정이 필요 | [설정 방법](#2단계-시스템-환경설정) |
+| 앱 충돌 | LaunchAgent 충돌 발생 시 | [수동 제거](#방법-2-수동-제거) 실행 |
 
 ### ⚙️ 권한 설정 방법
 
@@ -249,14 +249,14 @@ pkgbuild --install-location /Applications \
 
 - [원작 블로그](https://juil.dev/mac-right-command-to-hangul/)
 - [Karabiner-Elements](https://github.com/pqrs-org/Karabiner-Elements) (고급 키 리매퍼)
-- [Apple HID 문서](https://developer.apple.com/documentation/hid/hid_usage_tables/keyboard/collection)
+- [Apple HID Usage Tables](https://developer.apple.com/library/archive/technotes/tn2450/_index.html)
 
 ---
 
 <div align="center">
 
-**⭐ 이 리포지토리에 별을 주세요!**
+**⭐ 이 리포지토리가 도움이 되었다면 별을 눌러주세요!**
 
-[![Star History Chart](https://api.star-history.com/star.svg?repos=hulryung/hangul-command-app&type=Date)]
+[![GitHub stars](https://img.shields.io/github/stars/hulryung/hangul-command-app?style=social)](https://github.com/hulryung/hangul-command-app/stargazers)
 
 </div>
