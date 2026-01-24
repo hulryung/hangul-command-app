@@ -2,19 +2,24 @@ import Cocoa
 
 class AppDelegate: NSObject, NSApplicationDelegate {
     var statusItem: NSStatusItem?
-    
+
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         // Create status bar item
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        
+
         if let button = statusItem?.button {
             button.image = NSImage(systemSymbolName: "keyboard", accessibilityDescription: "Hangul Toggle")
             button.action = #selector(togglePopover)
             button.target = self
         }
-        
+
         // Hide dock icon
         NSApp.setActivationPolicy(.accessory)
+
+        // 자동 시작 상태 확인 및 초기화
+        Task { @MainActor in
+            KeyMappingManager.shared.refreshLaunchAtLoginStatus()
+        }
     }
     
     @objc func togglePopover() {

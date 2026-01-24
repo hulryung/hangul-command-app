@@ -2,12 +2,13 @@ import SwiftUI
 
 @main
 struct HangulCommandAppApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environmentObject(KeyMappingManager.shared)
         }
-        .windowStyle(.hiddenTitleBar)
         .windowResizability(.contentSize)
         
         MenuBarExtra("한영 전환", systemImage: "keyboard") {
@@ -30,6 +31,13 @@ struct HangulCommandAppApp: App {
                     }
                 }
             }
+            
+            Divider()
+            
+            Toggle("로그인 시 자동 시작", isOn: Binding(
+                get: { KeyMappingManager.shared.launchAtLogin },
+                set: { KeyMappingManager.shared.launchAtLogin = $0 }
+            ))
             
             Divider()
             

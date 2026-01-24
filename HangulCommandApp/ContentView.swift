@@ -105,6 +105,15 @@ struct ContentView: View {
                 .cornerRadius(10)
             }
             
+            Toggle(isOn: $keyMappingManager.launchAtLogin) {
+                HStack {
+                    Image(systemName: "power")
+                    Text("로그인 시 자동 시작")
+                }
+            }
+            .toggleStyle(.switch)
+            .padding(.top, 8)
+            
             Spacer()
             
             if let errorMessage = keyMappingManager.errorMessage {

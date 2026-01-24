@@ -101,6 +101,35 @@ hidutil property --set '{"UserKeyMapping":[{"HIDKeyboardModifierMappingSrc":0x70
 hidutil property --set '{"UserKeyMapping":[]}'
 ```
 
+## ⚠️ 첫 실행 시 보안 경고
+
+앱을 처음 실행하면 다음과 같은 경고가 표시될 수 있습니다:
+
+> "HangulCommandApp"은(는) Apple에서 악성 소프트웨어가 있는지 확인할 수 없기 때문에 열 수 없습니다.
+
+이는 앱이 Apple Developer 인증서로 서명되지 않아서 나타나는 macOS Gatekeeper 경고입니다. **앱은 안전합니다.**
+
+### 해결 방법 1: 우클릭으로 열기 (권장)
+
+1. Finder에서 `HangulCommandApp.app` 찾기
+2. **우클릭** (또는 Control + 클릭)
+3. **"열기"** 선택
+4. 경고창에서 **"열기"** 클릭
+
+### 해결 방법 2: 시스템 설정에서 허용
+
+1. **시스템 설정** → **개인정보 보호 및 보안**
+2. 아래로 스크롤하면 "HangulCommandApp이 차단됨" 메시지 표시
+3. **"그래도 열기"** 클릭
+
+### 해결 방법 3: 터미널에서 quarantine 속성 제거
+
+```bash
+xattr -cr /Applications/HangulCommandApp.app
+```
+
+> 💡 한 번만 허용하면 이후에는 경고 없이 실행됩니다.
+
 ## 💻 사용 방법
 
 ### 1단계: 앱에서 활성화
