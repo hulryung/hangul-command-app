@@ -137,8 +137,23 @@ class KeyMappingManager: ObservableObject {
             errorMessage = nil
         }
         
+        // Check if plist and script exist
         let plistExists = FileManager.default.fileExists(atPath: launchAgentPlistPath)
         let scriptExists = FileManager.default.fileExists(atPath: scriptPath)
+        
+        // Also check current hidutil mapping to verify it's actually active
+        var hidutilActive = false
+        if plistExists && scriptExists {
+            do {
+                let output = try executeProcess("/usr/bin/hidutil", arguments: ["property", "--get", "UserKeyMapping"])
+                let outputString = String(data: output, encoding: .utf8) ?? ""
+                // Check if our mapping (0x90 = 144 decimal for Lang1) is present
+                hidutilActive = outputString.contains("0x700000090") || outputString.contains("144")
+            } catch {
+                // If we can't check, assume it's enabled based on file existence
+                hidutilActive = true
+            }
+        }
         
         await MainActor.run {
             self.isMappingEnabled = plistExists && scriptExists
@@ -157,17 +172,35 @@ class KeyMappingManager: ObservableObject {
             let directory = URL(fileURLWithPath: scriptPath).deletingLastPathComponent().path
             try createSecureDirectory(at: directory)
             
-            // Create script content safely
+            // ===== KEY FIX =====
+            // Changed from F18 (0x6D) to Lang1/한영 (0x90)
+            // Lang1 (0x90) is the dedicated Korean/English toggle key
+            // macOS recognizes this natively - no extra system shortcut config needed
+            //
+            // HID Usage Table reference:
+            //   0x7000000E7 = Right Command (source)
+            //   0x700000090 = Keyboard Lang1 / 한영 (destination)
+            //
+            // Previously used 0x70000006D (F18), which required manually
+            // setting F18 as the input source shortcut in System Preferences.
+            // With Lang1, it just works immediately.
             let scriptContent = """
             #!/bin/sh
-            # Secure key mapping script
-            hidutil property --set '{"UserKeyMapping":[{"HIDKeyboardModifierMappingSrc":0x7000000e7,"HIDKeyboardModifierMappingDst":0x70000006d}]}'
+            # Right Command (0xE7) -> Lang1/한영 key (0x90)
+            # Lang1 is natively recognized by macOS as Korean/English toggle
+            hidutil property --set '{"UserKeyMapping":[{"HIDKeyboardModifierMappingSrc":0x7000000e7,"HIDKeyboardModifierMappingDst":0x700000090}]}'
             """
             
             try scriptContent.write(toFile: scriptPath, atomically: true, encoding: .utf8)
             
             // Set executable permissions securely
             _ = try executeProcess("/bin/chmod", arguments: ["755", scriptPath])
+            
+            // Also apply the mapping immediately (so it works without reboot)
+            _ = try? executeProcess("/usr/bin/hidutil", arguments: [
+                "property", "--set",
+                "{\"UserKeyMapping\":[{\"HIDKeyboardModifierMappingSrc\":0x7000000e7,\"HIDKeyboardModifierMappingDst\":0x700000090}]}"
+            ])
             
             // Create LaunchAgent plist in temp first
             let plistContent = generateLaunchAgentPlist()
@@ -209,6 +242,12 @@ class KeyMappingManager: ObservableObject {
             isLoading = true
             errorMessage = nil
         }
+        
+        // Clear hidutil mapping immediately
+        _ = try? executeProcess("/usr/bin/hidutil", arguments: [
+            "property", "--set",
+            "{\"UserKeyMapping\":[]}"
+        ])
         
         // Use secure AppleScript for removal
         let success = await executeSecureAppleScript(
@@ -277,19 +316,7 @@ class KeyMappingManager: ObservableObject {
                 launchctl remove '\(escapedRemove)' 2>/dev/null || true;
                 rm -f '\(escapedPlist)' 2>/dev/null || true;
                 rm -f '\(escapedScript)' 2>/dev/null || true;
-                echo 'SUCCESS'
-            " with administrator privileges
-            """
-        } else         if let remove = remove, let plist = plistPath, let script = scriptPath {
-            // Secure script removal
-            let escapedRemove = remove.replacingOccurrences(of: "'", with: "'\\''")
-            let escapedPlist = plist.replacingOccurrences(of: "'", with: "'\\''")
-            let escapedScript = script.replacingOccurrences(of: "'", with: "'\\''")
-            scriptContent = """
-            do shell script "
-                launchctl remove '\(escapedRemove)' 2>/dev/null || true;
-                rm -f '\(escapedPlist)' 2>/dev/null || true;
-                rm -f '\(escapedScript)' 2>/dev/null || true;
+                hidutil property --set '{\"UserKeyMapping\":[]}' 2>/dev/null || true;
                 echo 'SUCCESS'
             " with administrator privileges
             """
