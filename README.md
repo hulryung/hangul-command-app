@@ -22,7 +22,7 @@ Remap any key to toggle Korean/English input on macOS.
 
 ## Install
 
-Download the latest `.zip` from [Releases](https://github.com/hulryung/hangul-command-app/releases), unzip, and move to `/Applications`.
+Download the latest `.zip` from [Releases](https://github.com/hulryung/HangulKeyChanger/releases), unzip, and move to `/Applications`.
 
 > On first launch, right-click → Open to bypass Gatekeeper, or run:
 > ```bash
@@ -42,7 +42,7 @@ Click **Disable** in the app to restore all settings, then delete the app.
 ## Build from source
 
 ```bash
-git clone https://github.com/hulryung/hangul-command-app.git
+git clone https://github.com/hulryung/HangulKeyChanger.git
 cd hangul-command-app
 xcodebuild -scheme HangulCommandApp build
 ```
