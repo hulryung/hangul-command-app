@@ -9,131 +9,120 @@ struct ContentView: View {
     @State private var showKeyCaptureSheet = false
 
     var body: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: 16) {
             // Header
-            VStack(spacing: 8) {
+            HStack(spacing: 12) {
                 Image(systemName: "keyboard.fill")
-                    .font(.system(size: 48))
+                    .font(.system(size: 28))
                     .foregroundColor(.accentColor)
-                    .accessibilityLabel("키보드 아이콘")
 
-                Text("한영 전환 앱")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("한영 전환 앱")
+                        .font(.title2)
+                        .fontWeight(.bold)
 
-                Text("원하는 키를 한영키로 사용")
-                    .font(.headline)
-                    .foregroundColor(.secondary)
+                    Text("원하는 키를 한영키로 사용")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+
+                Spacer()
             }
 
-            Spacer()
+            Divider()
 
-            // Key Configuration
-            VStack(spacing: 12) {
-                Text("전환 키")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
+            // Key Configuration + Status combined
+            VStack(spacing: 14) {
+                // Key selection
                 HStack {
-                    Image(systemName: "command")
-                        .font(.title2)
-                        .foregroundColor(.accentColor)
-
-                    Text(keyMappingManager.sourceKeyInfo.displayName)
-                        .font(.title3)
-                        .fontWeight(.medium)
+                    Label("전환 키", systemImage: "command")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
 
                     Spacer()
 
-                    Button("키 변경") {
+                    Text(keyMappingManager.sourceKeyInfo.displayName)
+                        .font(.body)
+                        .fontWeight(.medium)
+
+                    Button("변경") {
                         showKeyCaptureSheet = true
                     }
                     .buttonStyle(.bordered)
+                    .controlSize(.small)
                 }
-            }
-            .padding(16)
-            .background(Color(NSColor.controlBackgroundColor))
-            .cornerRadius(12)
 
-            // Status & Toggle
-            VStack(spacing: 16) {
+                Divider()
+
+                // Status
                 HStack {
-                    Image(systemName: keyMappingManager.isMappingEnabled ? "checkmark.circle.fill" : "xmark.circle.fill")
-                        .font(.title2)
-                        .foregroundColor(keyMappingManager.isMappingEnabled ? .green : .red)
+                    Label("상태", systemImage: keyMappingManager.isMappingEnabled ? "checkmark.circle.fill" : "xmark.circle.fill")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
 
-                    Text("현재 상태: \(keyMappingManager.isMappingEnabled ? "활성화" : "비활성화")")
-                        .font(.title3)
+                    Spacer()
+
+                    Text(keyMappingManager.isMappingEnabled ? "활성화" : "비활성화")
+                        .font(.body)
                         .fontWeight(.medium)
+                        .foregroundColor(keyMappingManager.isMappingEnabled ? .green : .red)
                 }
 
+                // Toggle button
                 Button(action: {
                     Task { await toggleMapping() }
                 }) {
                     HStack {
                         if keyMappingManager.isLoading {
                             ProgressView()
-                                .scaleEffect(0.8)
+                                .scaleEffect(0.7)
                         } else {
-                            Image(systemName: keyMappingManager.isMappingEnabled ? "xmark" : "checkmark")
+                            Image(systemName: keyMappingManager.isMappingEnabled ? "stop.fill" : "play.fill")
+                                .font(.caption)
                         }
 
                         Text(keyMappingManager.isMappingEnabled ? "비활성화" : "활성화")
-                            .fontWeight(.semibold)
+                            .fontWeight(.medium)
                     }
                     .frame(maxWidth: .infinity)
-                    .frame(height: 44)
+                    .frame(height: 36)
                     .background(keyMappingManager.isMappingEnabled ? Color.red : Color.accentColor)
                     .foregroundColor(.white)
-                    .cornerRadius(12)
+                    .cornerRadius(8)
                 }
                 .disabled(keyMappingManager.isLoading)
             }
-            .padding(20)
+            .padding(14)
             .background(Color(NSColor.controlBackgroundColor))
-            .cornerRadius(16)
-            .shadow(radius: 2)
+            .cornerRadius(10)
 
             // Instructions
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 8) {
                 Text("사용 방법")
-                    .font(.headline)
+                    .font(.subheadline)
                     .fontWeight(.semibold)
 
-                VStack(alignment: .leading, spacing: 8) {
-                    InstructionRow(
-                        number: 1,
-                        text: "\"키 변경\" 버튼을 눌러 한영 전환에 사용할 키를 설정"
-                    )
-
-                    InstructionRow(
-                        number: 2,
-                        text: "활성화 버튼 클릭 (관리자 비밀번호 입력)"
-                    )
+                VStack(alignment: .leading, spacing: 6) {
+                    InstructionRow(number: 1, text: "\"변경\" 버튼으로 한영 전환 키 설정")
+                    InstructionRow(number: 2, text: "활성화 클릭 (관리자 비밀번호 입력)")
                 }
 
-                Text("활성화하면 키 매핑과 입력 소스 단축키가 자동으로 설정됩니다. 앱을 종료해도 계속 동작합니다.")
-                    .font(.caption)
+                Text("활성화하면 키 매핑과 입력 소스 단축키가 자동 설정됩니다.\n앱을 종료해도 계속 동작합니다.")
+                    .font(.caption2)
                     .foregroundColor(.secondary)
-                    .padding(.top, 4)
+                    .padding(.top, 2)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-
-            Spacer()
 
             if let errorMessage = keyMappingManager.errorMessage {
                 Text(errorMessage)
                     .font(.caption)
                     .foregroundColor(.red)
-                    .padding(.horizontal)
             }
-
-            Text("활성화 즉시 적용 · 재부팅 필요 없음")
-                .font(.caption)
-                .foregroundColor(.secondary)
         }
-        .padding(32)
-        .frame(minWidth: 400, minHeight: 560)
+        .padding(20)
+        .frame(width: 340)
+        .fixedSize(horizontal: false, vertical: true)
         .alert(isPresented: $showingAlert) {
             Alert(
                 title: Text(alertTitle),
@@ -172,10 +161,10 @@ struct ContentView: View {
 
         if success {
             alertTitle = "성공"
-            alertMessage = "한영 전환이 성공적으로 \(targetState)되었습니다.\n\(keyMappingManager.sourceKeyInfo.displayName) 키로 한영 전환을 사용해 보세요!"
+            alertMessage = "한영 전환이 \(targetState)되었습니다."
         } else {
             alertTitle = "오류"
-            alertMessage = "\(targetState)하는 중 오류가 발생했습니다. 관리자 비밀번호를 확인해주세요."
+            alertMessage = "\(targetState) 중 오류가 발생했습니다. 관리자 비밀번호를 확인해주세요."
         }
         showingAlert = true
     }
@@ -189,68 +178,57 @@ struct KeyCaptureSheetView: View {
     @State private var pulseAnimation = false
 
     var body: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: 20) {
             if let captured = manager.capturedKeyInfo {
-                // Key detected
-                VStack(spacing: 16) {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 48))
-                        .foregroundColor(.green)
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 40))
+                    .foregroundColor(.green)
 
-                    Text("감지된 키")
-                        .font(.headline)
-                        .foregroundColor(.secondary)
+                Text(captured.displayName)
+                    .font(.title2)
+                    .fontWeight(.bold)
 
-                    Text(captured.displayName)
-                        .font(.system(size: 28, weight: .bold))
-
-                    HStack(spacing: 16) {
-                        Button("다시 입력") {
-                            manager.startKeyCapture()
-                        }
-                        .buttonStyle(.bordered)
-
-                        Button("확인") {
-                            manager.setSourceKey(captured)
-                            manager.stopKeyCapture()
-                            isPresented = false
-                        }
-                        .buttonStyle(.borderedProminent)
+                HStack(spacing: 12) {
+                    Button("다시 입력") {
+                        manager.startKeyCapture()
                     }
-                }
-            } else {
-                // Waiting for key press
-                VStack(spacing: 16) {
-                    Image(systemName: "keyboard")
-                        .font(.system(size: 48))
-                        .foregroundColor(.accentColor)
-                        .opacity(pulseAnimation ? 0.4 : 1.0)
-                        .animation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true), value: pulseAnimation)
+                    .buttonStyle(.bordered)
 
-                    Text("한영 전환에 사용할 키를\n눌러주세요")
-                        .font(.title2)
-                        .fontWeight(.semibold)
-                        .multilineTextAlignment(.center)
-
-                    Text("커맨드, 옵션, 쉬프트 등 수정자 키도 감지됩니다")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-
-                    Button("취소") {
+                    Button("확인") {
+                        manager.setSourceKey(captured)
                         manager.stopKeyCapture()
                         isPresented = false
                     }
-                    .buttonStyle(.bordered)
-                    .padding(.top, 8)
+                    .buttonStyle(.borderedProminent)
                 }
-                .onAppear {
-                    pulseAnimation = true
+            } else {
+                Image(systemName: "keyboard")
+                    .font(.system(size: 40))
+                    .foregroundColor(.accentColor)
+                    .opacity(pulseAnimation ? 0.4 : 1.0)
+                    .animation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true), value: pulseAnimation)
+
+                Text("한영 전환에 사용할 키를\n눌러주세요")
+                    .font(.headline)
+                    .multilineTextAlignment(.center)
+
+                Text("커맨드, 옵션, 쉬프트 등 수정자 키도 감지됩니다")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+
+                Button("취소") {
+                    manager.stopKeyCapture()
+                    isPresented = false
                 }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+                .padding(.top, 4)
             }
         }
-        .padding(40)
-        .frame(width: 360, height: 280)
+        .padding(32)
+        .frame(width: 320, height: 240)
         .onAppear {
+            pulseAnimation = true
             manager.startKeyCapture()
         }
         .onDisappear {
@@ -266,17 +244,17 @@ struct InstructionRow: View {
     let text: String
 
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
+        HStack(alignment: .top, spacing: 8) {
             Text("\(number)")
-                .font(.caption)
+                .font(.caption2)
                 .fontWeight(.bold)
                 .foregroundColor(.white)
-                .frame(width: 20, height: 20)
+                .frame(width: 16, height: 16)
                 .background(Color.accentColor)
                 .clipShape(Circle())
 
             Text(text)
-                .font(.body)
+                .font(.caption)
                 .fixedSize(horizontal: false, vertical: true)
 
             Spacer()
