@@ -56,9 +56,13 @@ struct ContentView: View {
 
                 // Status
                 HStack {
-                    Label("상태", systemImage: keyMappingManager.isMappingEnabled ? "checkmark.circle.fill" : "xmark.circle.fill")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                    HStack(spacing: 4) {
+                        Image(systemName: keyMappingManager.isMappingEnabled ? "checkmark.circle.fill" : "xmark.circle.fill")
+                            .foregroundColor(keyMappingManager.isMappingEnabled ? .accentColor : .gray)
+                        Text("상태")
+                    }
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
 
                     Spacer()
 
@@ -90,6 +94,7 @@ struct ContentView: View {
                     .foregroundColor(.white)
                     .cornerRadius(8)
                 }
+                .buttonStyle(.plain)
                 .disabled(keyMappingManager.isLoading)
             }
             .padding(14)
