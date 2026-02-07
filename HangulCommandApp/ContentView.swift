@@ -110,27 +110,14 @@ struct ContentView: View {
                         number: 2,
                         text: "활성화 버튼 클릭 (관리자 비밀번호 입력)"
                     )
-
-                    InstructionRow(
-                        number: 3,
-                        text: "시스템 설정 > 키보드 > 키보드 단축키 > 입력 소스에서 \"이전 입력 소스 선택\" 단축키를 설정한 키로 변경"
-                    )
                 }
+
+                Text("활성화하면 키 매핑과 입력 소스 단축키가 자동으로 설정됩니다. 앱을 종료해도 계속 동작합니다.")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .padding(.top, 4)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-
-            Button(action: {
-                keyMappingManager.openSystemPreferences()
-            }) {
-                HStack {
-                    Image(systemName: "gear")
-                    Text("시스템 환경설정 열기")
-                }
-                .frame(maxWidth: .infinity)
-                .frame(height: 40)
-                .background(Color(NSColor.controlBackgroundColor))
-                .cornerRadius(10)
-            }
 
             Spacer()
 

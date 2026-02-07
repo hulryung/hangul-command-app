@@ -330,6 +330,7 @@ class KeyMappingManager: ObservableObject {
             try? FileManager.default.removeItem(atPath: tempPlistPath)
 
             if success {
+                setF18AsInputSourceShortcut()
                 await checkCurrentStatus()
                 return true
             } else {
@@ -359,6 +360,8 @@ class KeyMappingManager: ObservableObject {
             "{\"UserKeyMapping\":[]}"
         ])
 
+        restoreDefaultInputSourceShortcut()
+
         let success = await executeSecureAppleScript(
             remove: launchAgentLabel,
             plistPath: launchAgentPlistPath,
@@ -375,6 +378,36 @@ class KeyMappingManager: ObservableObject {
             }
             return false
         }
+    }
+
+    // MARK: - Input Source Shortcut
+
+    /// Set F18 as the "Select previous input source" shortcut (hotkey 60)
+    /// parameters: (65535=no char, 79=F18 keycode, 8388608=fn flag)
+    private func setF18AsInputSourceShortcut() {
+        _ = try? executeProcess("/usr/bin/defaults", arguments: [
+            "write", "com.apple.symbolichotkeys",
+            "AppleSymbolicHotKeys", "-dict-add", "60",
+            "<dict><key>enabled</key><true/><key>value</key><dict><key>parameters</key><array><integer>65535</integer><integer>79</integer><integer>8388608</integer></array><key>type</key><string>standard</string></dict></dict>"
+        ])
+        _ = try? executeProcess(
+            "/System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings",
+            arguments: ["-u"]
+        )
+    }
+
+    /// Restore default shortcut: Control+Space
+    /// parameters: (32=space char, 49=space keycode, 262144=ctrl flag)
+    private func restoreDefaultInputSourceShortcut() {
+        _ = try? executeProcess("/usr/bin/defaults", arguments: [
+            "write", "com.apple.symbolichotkeys",
+            "AppleSymbolicHotKeys", "-dict-add", "60",
+            "<dict><key>enabled</key><true/><key>value</key><dict><key>parameters</key><array><integer>32</integer><integer>49</integer><integer>262144</integer></array><key>type</key><string>standard</string></dict></dict>"
+        ])
+        _ = try? executeProcess(
+            "/System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings",
+            arguments: ["-u"]
+        )
     }
 
     // MARK: - Helpers
