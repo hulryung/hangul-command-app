@@ -50,6 +50,7 @@ struct ContentView: View {
                     }
                     .buttonStyle(.bordered)
                     .controlSize(.small)
+                    .disabled(keyMappingManager.isMappingEnabled)
                 }
 
                 Divider()
@@ -164,14 +165,11 @@ struct ContentView: View {
             targetState = "활성화"
         }
 
-        if success {
-            alertTitle = "성공"
-            alertMessage = "한영 전환이 \(targetState)되었습니다."
-        } else {
+        if !success {
             alertTitle = "오류"
             alertMessage = "\(targetState) 중 오류가 발생했습니다. 관리자 비밀번호를 확인해주세요."
+            showingAlert = true
         }
-        showingAlert = true
     }
 }
 
