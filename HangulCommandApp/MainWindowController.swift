@@ -98,6 +98,12 @@ class MainViewController: NSViewController {
         errorLabel = makeLabel("", size: 11, color: .systemRed)
         errorLabel.isHidden = true
         mainStack.addArrangedSubview(errorLabel)
+
+        // 6. Divider + Donate
+        mainStack.addArrangedSubview(makeDivider())
+        let donateButton = buildDonateButton()
+        mainStack.addArrangedSubview(donateButton)
+        donateButton.widthAnchor.constraint(equalTo: mainStack.widthAnchor, constant: -40).isActive = true
     }
 
     // MARK: - Header
@@ -280,6 +286,22 @@ class MainViewController: NSViewController {
         row.addArrangedSubview(label)
 
         return row
+    }
+
+    // MARK: - Donate Button
+
+    private func buildDonateButton() -> NSView {
+        let button = NSButton(title: "☕ Buy me a coffee", target: self, action: #selector(donateTapped))
+        button.bezelStyle = .rounded
+        button.controlSize = .regular
+        button.font = NSFont.systemFont(ofSize: 12, weight: .medium)
+        return button
+    }
+
+    @objc private func donateTapped() {
+        if let url = URL(string: "https://buymeacoffee.com/hulryung") {
+            NSWorkspace.shared.open(url)
+        }
     }
 
     // MARK: - Combine Bindings
