@@ -22,12 +22,15 @@ Remap any key to toggle Korean/English input on macOS.
 
 ## Install
 
-Download the latest `.zip` from [Releases](https://github.com/hulryung/HangulKeyChanger/releases), unzip, and move to `/Applications`.
+### Homebrew
 
-> On first launch, right-click → Open to bypass Gatekeeper, or run:
-> ```bash
-> xattr -cr /Applications/HangulCommandApp.app
-> ```
+```bash
+brew install --cask hulryung/tap/hangulkeychanger
+```
+
+### Manual
+
+Download the latest `.dmg` from [Releases](https://github.com/hulryung/HangulKeyChanger/releases), open it, and drag the app to `/Applications`.
 
 ## Usage
 
