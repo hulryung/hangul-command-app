@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hangul Key Changer — macOS 한영 전환키 설정</title>
+  <meta name="description" content="원하는 키를 한영 전환키로 사용할 수 있는 macOS 유틸리티. Remap any key to toggle Korean/English input.">
+  <meta property="og:title" content="Hangul Key Changer">
+  <meta property="og:description" content="원하는 키를 한영 전환키로 사용할 수 있는 macOS 유틸리티">
+  <meta property="og:image" content="screenshot.png">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%E2%8C%A8</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+
+    :root {
+      --bg: #09090b;
+      --bg-subtle: #111113;
+      --surface: #18181b;
+      --surface-hover: #1f1f23;
+      --border: #27272a;
+      --border-subtle: #1e1e21;
+      --text: #fafafa;
+      --text-secondary: #a1a1aa;
+      --text-muted: #71717a;
+      --accent: #22c55e;
+      --accent-hover: #16a34a;
+      --accent-soft: #86efac;
+      --accent-glow: rgba(34, 197, 94, 0.12);
+      --blue: #3b82f6;
+      --radius: 12px;
+      --font-display: 'Sora', sans-serif;
+      --font-body: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    a { color: var(--accent); text-decoration: none; transition: color 0.2s; }
+    a:hover { color: var(--accent-soft); }
+
+    /* ── NAV ── */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(24px, 5vw, 64px);
+      background: rgba(9, 9, 11, 0.8);
+      backdrop-filter: blur(16px) saturate(180%);
+      -webkit-backdrop-filter: blur(16px) saturate(180%);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--text);
+    }
+
+    .nav-logo-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, var(--accent), #15803d);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: white;
+      font-weight: 800;
+    }
+
+    .nav-links { display: flex; align-items: center; gap: 24px; }
+
+    .nav-link {
+      font-size: 14px;
+      color: var(--text-secondary);
+      transition: color 0.2s;
+    }
+    .nav-link:hover { color: var(--text); }
+
+    .github-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      transition: all 0.2s;
+    }
+    .github-btn:hover {
+      background: var(--surface-hover);
+      border-color: var(--text-muted);
+      color: var(--text);
+    }
+    .github-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      padding: 160px clamp(24px, 5vw, 64px) 100px;
+      text-align: center;
+      overflow: hidden;
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(34, 197, 94, 0.07), transparent),
+        radial-gradient(ellipse 50% 40% at 80% 5%, rgba(59, 130, 246, 0.03), transparent),
+        var(--bg);
+    }
+
+    .hero::before {
+      content: '\D55C';
+      position: absolute;
+      right: 8%;
+      top: 50%;
+      transform: translateY(-55%);
+      font-size: clamp(180px, 22vw, 380px);
+      font-weight: 900;
+      opacity: 0.025;
+      color: var(--accent);
+      pointer-events: none;
+      user-select: none;
+      font-family: var(--font-body);
+      line-height: 1;
+    }
+
+    .hero-content { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; }
+
+    .badges {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 14px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      background: var(--accent-glow);
+      border: 1px solid rgba(34, 197, 94, 0.15);
+      color: var(--accent-soft);
+    }
+
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(40px, 7vw, 72px);
+      font-weight: 800;
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+      margin-bottom: 20px;
+      background: linear-gradient(180deg, #ffffff 30%, #86efac 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-subtitle {
+      font-size: clamp(16px, 2.2vw, 20px);
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: 8px;
+      font-weight: 400;
+    }
+
+    .hero-subtitle-en {
+      font-size: clamp(14px, 1.8vw, 16px);
+      color: var(--text-muted);
+      margin-bottom: 40px;
+    }
+
+    .hero-actions {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 64px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: var(--font-body);
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #052e16;
+      box-shadow: 0 0 24px rgba(34, 197, 94, 0.25);
+    }
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      box-shadow: 0 0 32px rgba(34, 197, 94, 0.35);
+      transform: translateY(-1px);
+      color: #052e16;
+    }
+
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover {
+      background: var(--surface-hover);
+      border-color: var(--text-muted);
+      transform: translateY(-1px);
+    }
+
+    .btn svg { width: 16px; height: 16px; }
+
+    .screenshot-wrapper {
+      position: relative;
+      display: inline-block;
+      max-width: 400px;
+      width: 100%;
+    }
+
+    .screenshot-wrapper::after {
+      content: '';
+      position: absolute;
+      bottom: -25%;
+      left: 5%;
+      right: 5%;
+      height: 70%;
+      background: radial-gradient(ellipse, rgba(34, 197, 94, 0.12), transparent 70%);
+      filter: blur(50px);
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .screenshot {
+      width: 100%;
+      border-radius: 14px;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.06),
+        0 32px 64px -16px rgba(0, 0, 0, 0.6),
+        0 0 100px rgba(34, 197, 94, 0.06);
+      animation: float 7s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    /* ── SECTION DIVIDER ── */
+    .divider {
+      height: 1px;
+      max-width: 600px;
+      margin: 0 auto;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+    }
+
+    /* ── FEATURES ── */
+    .features {
+      padding: 100px clamp(24px, 5vw, 64px);
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(28px, 4vw, 38px);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 48px;
+      color: var(--text);
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .feature-card {
+      padding: 28px;
+      border-radius: var(--radius);
+      background: rgba(24, 24, 27, 0.5);
+      border: 1px solid var(--border-subtle);
+      transition: all 0.3s;
+    }
+    .feature-card:hover {
+      background: rgba(24, 24, 27, 0.8);
+      border-color: var(--border);
+      transform: translateY(-2px);
+    }
+
+    .feature-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--accent-glow);
+      border: 1px solid rgba(34, 197, 94, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .feature-icon svg { width: 20px; height: 20px; stroke: var(--accent); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+    .feature-title {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .feature-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    /* ── INSTALL ── */
+    .install {
+      padding: 100px clamp(24px, 5vw, 64px);
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .install-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .install-card {
+      padding: 28px;
+      border-radius: var(--radius);
+      background: rgba(24, 24, 27, 0.5);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .install-card-title {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .install-card-title svg { width: 18px; height: 18px; }
+
+    .code-block {
+      position: relative;
+      padding: 16px 20px;
+      border-radius: 10px;
+      background: #0c0c0e;
+      border: 1px solid var(--border-subtle);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text-secondary);
+      overflow-x: auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .code-block code { white-space: nowrap; }
+    .code-block .prompt { color: var(--accent); user-select: none; margin-right: 8px; }
+
+    .copy-btn {
+      flex-shrink: 0;
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      font-family: var(--font-body);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .copy-btn:hover { color: var(--text); border-color: var(--text-muted); }
+    .copy-btn.copied { color: var(--accent); border-color: rgba(34,197,94,0.3); }
+
+    .install-card p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .install-card p a {
+      font-weight: 500;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    /* ── STEPS ── */
+    .steps-section {
+      padding: 100px clamp(24px, 5vw, 64px);
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .steps {
+      display: flex;
+      gap: 0;
+      align-items: flex-start;
+    }
+
+    .step {
+      flex: 1;
+      text-align: center;
+      padding: 0 20px;
+    }
+
+    .step-number {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--accent-glow);
+      border: 1.5px solid rgba(34, 197, 94, 0.25);
+      color: var(--accent);
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .step-title {
+      font-family: var(--font-display);
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .step-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .step-connector {
+      width: 60px;
+      flex-shrink: 0;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(34,197,94,0.3), rgba(34,197,94,0.08));
+      margin-top: 20px;
+    }
+
+    /* ── FOOTER ── */
+    .footer {
+      padding: 48px clamp(24px, 5vw, 64px);
+      text-align: center;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .footer-link {
+      font-size: 14px;
+      color: var(--text-muted);
+      transition: color 0.2s;
+    }
+    .footer-link:hover { color: var(--text-secondary); }
+
+    .footer-copy {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* ── REVEAL ANIMATION ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .reveal.revealed {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
+
+    /* hero stagger */
+    .hero-content .badges { animation: fadeUp 0.8s cubic-bezier(0.16,1,0.3,1) 0.1s both; }
+    .hero-content .hero-title { animation: fadeUp 0.8s cubic-bezier(0.16,1,0.3,1) 0.2s both; }
+    .hero-content .hero-subtitle { animation: fadeUp 0.8s cubic-bezier(0.16,1,0.3,1) 0.3s both; }
+    .hero-content .hero-subtitle-en { animation: fadeUp 0.8s cubic-bezier(0.16,1,0.3,1) 0.35s both; }
+    .hero-content .hero-actions { animation: fadeUp 0.8s cubic-bezier(0.16,1,0.3,1) 0.45s both; }
+    .hero-content .screenshot-wrapper { animation: fadeUp 1s cubic-bezier(0.16,1,0.3,1) 0.6s both; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .hero { padding: 130px 24px 80px; }
+      .hero::before { font-size: 160px; right: -5%; opacity: 0.02; }
+      .features-grid { grid-template-columns: 1fr; }
+      .install-grid { grid-template-columns: 1fr; }
+      .steps { flex-direction: column; align-items: center; }
+      .step { padding: 0; max-width: 280px; }
+      .step-connector {
+        width: 1px;
+        height: 32px;
+        background: linear-gradient(180deg, rgba(34,197,94,0.3), rgba(34,197,94,0.08));
+        margin: 0;
+      }
+      .nav-links .nav-link { display: none; }
+    }
+
+    @media (max-width: 480px) {
+      .hero-actions { flex-direction: column; align-items: center; }
+      .btn { width: 100%; max-width: 280px; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-logo">
+      <div class="nav-logo-icon">H</div>
+      <span>Hangul Key Changer</span>
+    </div>
+    <div class="nav-links">
+      <a href="#features" class="nav-link">Features</a>
+      <a href="#install" class="nav-link">Install</a>
+      <a href="https://github.com/hulryung/HangulKeyChanger" class="github-btn" target="_blank" rel="noopener">
+        <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        GitHub
+      </a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="badges">
+        <span class="badge">macOS 14+</span>
+        <span class="badge">Swift 5</span>
+        <span class="badge">MIT License</span>
+      </div>
+      <h1 class="hero-title">Hangul Key<br>Changer</h1>
+      <p class="hero-subtitle">원하는 키를 한영 전환키로 설정하세요</p>
+      <p class="hero-subtitle-en">Remap any key to toggle Korean/English input on macOS</p>
+      <div class="hero-actions">
+        <a href="#install" class="btn btn-primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+          Homebrew로 설치
+        </a>
+        <a href="https://github.com/hulryung/HangulKeyChanger/releases" class="btn btn-secondary" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download
+        </a>
+      </div>
+      <div class="screenshot-wrapper">
+        <img class="screenshot" src="screenshot.png" alt="Hangul Key Changer app window" width="400" height="512">
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- FEATURES -->
+  <section class="features" id="features">
+    <p class="section-label reveal">Features</p>
+    <h2 class="section-title reveal reveal-delay-1">간편하고 강력한 한영 전환</h2>
+    <div class="features-grid">
+      <div class="feature-card reveal reveal-delay-1">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="6" y1="8" x2="6.01" y2="8"/><line x1="10" y1="8" x2="10.01" y2="8"/><line x1="14" y1="8" x2="14.01" y2="8"/><line x1="18" y1="8" x2="18.01" y2="8"/><line x1="6" y1="12" x2="6.01" y2="12"/><line x1="18" y1="12" x2="18.01" y2="12"/><line x1="8" y1="16" x2="16" y2="16"/></svg>
+        </div>
+        <h3 class="feature-title">키 리매핑</h3>
+        <p class="feature-desc">오른쪽 커맨드, Caps Lock 등 원하는 키를 한영 전환키로 설정할 수 있습니다.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-2">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </div>
+        <h3 class="feature-title">원클릭 설정</h3>
+        <p class="feature-desc">활성화 한 번이면 키 매핑과 시스템 단축키가 자동으로 설정됩니다.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-3">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+        </div>
+        <h3 class="feature-title">재부팅 후에도 유지</h3>
+        <p class="feature-desc">LaunchAgent가 설정을 유지하여 앱 실행 없이도 계속 작동합니다.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-4">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        </div>
+        <h3 class="feature-title">메뉴 바 컨트롤</h3>
+        <p class="feature-desc">상태 표시줄에서 빠르게 접근하고 설정을 관리할 수 있습니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- INSTALL -->
+  <section class="install" id="install">
+    <p class="section-label reveal">Install</p>
+    <h2 class="section-title reveal reveal-delay-1">설치</h2>
+    <div class="install-grid">
+      <div class="install-card reveal reveal-delay-2">
+        <h3 class="install-card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+          Homebrew
+        </h3>
+        <div class="code-block">
+          <code><span class="prompt">$</span>brew install --cask hulryung/tap/hangulkeychanger</code>
+          <button class="copy-btn" onclick="copyCommand(this)">Copy</button>
+        </div>
+      </div>
+      <div class="install-card reveal reveal-delay-3">
+        <h3 class="install-card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Manual Download
+        </h3>
+        <p><a href="https://github.com/hulryung/HangulKeyChanger/releases">Releases</a> 페이지에서 최신 <code>.dmg</code> 파일을 다운로드하고, 앱을 <code>/Applications</code> 폴더로 드래그하세요.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- USAGE STEPS -->
+  <section class="steps-section">
+    <p class="section-label reveal">How to Use</p>
+    <h2 class="section-title reveal reveal-delay-1">사용법</h2>
+    <div class="steps reveal reveal-delay-2">
+      <div class="step">
+        <div class="step-number">1</div>
+        <h3 class="step-title">키 선택</h3>
+        <p class="step-desc">"변경" 버튼을 클릭해<br>전환키를 선택하세요</p>
+      </div>
+      <div class="step-connector"></div>
+      <div class="step">
+        <div class="step-number">2</div>
+        <h3 class="step-title">활성화</h3>
+        <p class="step-desc">"활성화"를 클릭하고<br>관리자 비밀번호를 입력하세요</p>
+      </div>
+      <div class="step-connector"></div>
+      <div class="step">
+        <div class="step-number">3</div>
+        <h3 class="step-title">완료</h3>
+        <p class="step-desc">선택한 키로<br>한영 전환이 작동합니다</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- UNINSTALL NOTE -->
+  <section class="install">
+    <p class="section-label reveal">Uninstall</p>
+    <h2 class="section-title reveal reveal-delay-1">제거</h2>
+    <p class="reveal reveal-delay-2" style="font-size:15px; color:var(--text-secondary); line-height:1.7;">
+      앱에서 "비활성화"를 클릭하면 모든 설정이 원래대로 복원됩니다. 이후 앱을 삭제하면 됩니다.
+    </p>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-links">
+      <a href="https://github.com/hulryung/HangulKeyChanger" class="footer-link" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/hulryung/HangulKeyChanger/releases" class="footer-link" target="_blank" rel="noopener">Releases</a>
+      <a href="https://buymeacoffee.com/hulryung" class="footer-link" target="_blank" rel="noopener">Buy Me a Coffee</a>
+    </div>
+    <p class="footer-copy">MIT License &copy; 2025 hulryung</p>
+  </footer>
+
+  <script>
+    /* Scroll reveal */
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('revealed');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    /* Copy to clipboard */
+    function copyCommand(btn) {
+      navigator.clipboard.writeText('brew install --cask hulryung/tap/hangulkeychanger');
+      btn.textContent = '\u2713 Copied';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copy';
+        btn.classList.remove('copied');
+      }, 2000);
+    }
+
+    /* Smooth scroll for nav links */
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        const target = document.querySelector(a.getAttribute('href'));
+        if (target) {
+          e.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+  </script>
+</body>
+</html>
