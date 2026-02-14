@@ -26,7 +26,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate {
     }
 
     func showAndActivate() {
-        NSApp.activate(ignoringOtherApps: true)
+        NSApp.activate()
         window?.makeKeyAndOrderFront(nil)
         window?.center()
     }
@@ -46,6 +46,7 @@ class MainViewController: NSViewController {
     private var statusLabel: NSTextField!
     private var toggleButton: NSButton!
     private var errorLabel: NSTextField!
+    private var cardView: NSStackView!
 
     override func loadView() {
         view = NSView()
@@ -140,7 +141,8 @@ class MainViewController: NSViewController {
     // MARK: - Card (Key + Status + Toggle)
 
     private func buildCard() -> NSView {
-        let card = NSStackView()
+        cardView = NSStackView()
+        let card = cardView!
         card.orientation = .vertical
         card.spacing = 14
         card.edgeInsets = NSEdgeInsets(top: 14, left: 14, bottom: 14, right: 14)
@@ -342,6 +344,15 @@ class MainViewController: NSViewController {
                 self?.keyLabel.stringValue = keyInfo.displayName
             }
             .store(in: &cancellables)
+
+        // Update layer colors on appearance change (light/dark mode)
+        view.publisher(for: \.effectiveAppearance)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                self.cardView.layer?.backgroundColor = NSColor.controlBackgroundColor.cgColor
+                self.updateToggleUI(enabled: self.manager.isMappingEnabled)
+            }
+            .store(in: &cancellables)
     }
 
     private func updateToggleUI(enabled: Bool) {
@@ -454,6 +465,10 @@ class KeyCaptureSheetViewController: NSViewController {
     }
 
     required init?(coder: NSCoder) { fatalError() }
+
+    deinit {
+        pulseTimer?.invalidate()
+    }
 
     override func loadView() {
         view = NSView(frame: NSRect(x: 0, y: 0, width: 320, height: 240))

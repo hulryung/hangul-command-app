@@ -280,10 +280,8 @@ class KeyMappingManager: ObservableObject {
     // MARK: - Mapping Operations
 
     func checkCurrentStatus() async {
-        await MainActor.run {
-            isLoading = true
-            errorMessage = nil
-        }
+        isLoading = true
+        errorMessage = nil
 
         let plistExists = FileManager.default.fileExists(atPath: launchAgentPlistPath)
         let scriptExists = FileManager.default.fileExists(atPath: scriptPath)
@@ -295,18 +293,14 @@ class KeyMappingManager: ObservableObject {
             hidutilActive = output.contains("HIDKeyboardModifierMappingSrc")
         }
 
-        await MainActor.run {
-            // Both conditions: files exist for persistence AND hidutil is active now
-            self.isMappingEnabled = (plistExists && scriptExists) && hidutilActive
-            self.isLoading = false
-        }
+        // Both conditions: files exist for persistence AND hidutil is active now
+        isMappingEnabled = (plistExists && scriptExists) && hidutilActive
+        isLoading = false
     }
 
     func enableMapping() async -> Bool {
-        await MainActor.run {
-            isLoading = true
-            errorMessage = nil
-        }
+        isLoading = true
+        errorMessage = nil
 
         do {
             let directory = URL(fileURLWithPath: scriptPath).deletingLastPathComponent().path
@@ -325,7 +319,7 @@ class KeyMappingManager: ObservableObject {
 
             // Apply immediately
             let hidutilArg = "{\"UserKeyMapping\":[{\"HIDKeyboardModifierMappingSrc\":\(srcHex),\"HIDKeyboardModifierMappingDst\":0x70000006d}]}"
-            _ = try? executeProcess("/usr/bin/hidutil", arguments: ["property", "--set", hidutilArg])
+            _ = try executeProcess("/usr/bin/hidutil", arguments: ["property", "--set", hidutilArg])
 
             let plistContent = generateLaunchAgentPlist()
             let tempPlistPath = FileManager.default.temporaryDirectory.appendingPathComponent("com.hangulcommand.userkeymapping.plist").path
@@ -342,26 +336,20 @@ class KeyMappingManager: ObservableObject {
                 await checkCurrentStatus()
                 return true
             } else {
-                await MainActor.run {
-                    errorMessage = String(localized: "error.launchAgent")
-                    isLoading = false
-                }
+                errorMessage = String(localized: "error.launchAgent")
+                isLoading = false
                 return false
             }
         } catch {
-            await MainActor.run {
-                errorMessage = error.localizedDescription
-                isLoading = false
-            }
+            errorMessage = error.localizedDescription
+            isLoading = false
             return false
         }
     }
 
     func disableMapping() async -> Bool {
-        await MainActor.run {
-            isLoading = true
-            errorMessage = nil
-        }
+        isLoading = true
+        errorMessage = nil
 
         // Clear hidutil mapping (no admin needed, this is the critical operation)
         _ = try? executeProcess("/usr/bin/hidutil", arguments: [
@@ -380,14 +368,12 @@ class KeyMappingManager: ObservableObject {
             scriptPath: scriptPath
         )
 
-        await MainActor.run {
-            self.isMappingEnabled = false
-            self.isLoading = false
-            if !cleanupSuccess {
-                // Files may remain but mapping is cleared for this session
-                // On next reboot, the mapping may re-activate from LaunchAgent
-                print("LaunchAgent cleanup failed, files may remain")
-            }
+        isMappingEnabled = false
+        isLoading = false
+        if !cleanupSuccess {
+            // Files may remain but mapping is cleared for this session
+            // On next reboot, the mapping may re-activate from LaunchAgent
+            print("LaunchAgent cleanup failed, files may remain")
         }
         return true
     }
